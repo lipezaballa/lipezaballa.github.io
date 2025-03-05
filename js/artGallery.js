@@ -9,6 +9,7 @@
 import * as THREE from "../lib/three.module.js";
 import { GLTFLoader } from "../lib/GLTFLoader.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
+import { loadWalls } from "./scene.js";
 //import { PointerLockControls } from "../lib/PointerLockControls.js";
 
 //global sources
@@ -21,6 +22,7 @@ let renderer, scene, camera, cameraControls;
 const paintings = [];
 const selectedPaintings = new Map();
 let painting1;
+let mainPainting;
 
 // Secuence of actions
 init();
@@ -61,48 +63,124 @@ function init() {
 function loadScene() {
     loadFloor(-5);
     //loadFloor(5);
-    loadWalls();
-    loadArtPaitingGroup("images/artPaintings/LasMeninas_Velazquez.jpg", 3, {
-        x: -6,
-        y: 0,
-        z: -7.5,
-    });
-    loadArtPaitingGroup("images/artPaintings/MonaLisa_DaVinci.jpg", 2, {
-        x: -2,
-        y: 0,
-        z: -7.5,
-    });
-
-    loadArtPaitingGroup("images/artPaintings/LaRondaDeNoche_Rembrandt.jpg", 5, {
-        x: 4,
-        y: 0,
-        z: -7.5,
-    });
+    loadWalls(scene);
+    loadChairs();
+    loadTable();
+    //loadChair2();
+    loadPaintings();
 }
 
 function render() {
     requestAnimationFrame(render);
     //updateDirectionCamera();
 
-    //painting.rotation.y += 0.01;
+    mainPainting.rotation.y += 0.05;
     renderer.render(scene, camera);
 }
 
-function loadArtPaitingGroup(imagePath, scale, position) {
-    createArtPaintingGroup(imagePath, scale, position)
+function loadPaintings() {
+    loadArtPaitingGroup(
+        "images/artPaintings/LasMeninas_Velazquez.jpg",
+        3,
+        {
+            x: -6,
+            y: 0,
+            z: -7.5,
+        },
+        0,
+        false
+    );
+    loadArtPaitingGroup(
+        "images/artPaintings/MonaLisa_DaVinci.jpg",
+        2,
+        {
+            x: -2,
+            y: 0,
+            z: -7.5,
+        },
+        0,
+        false
+    );
+
+    loadArtPaitingGroup(
+        "images/artPaintings/LaRondaDeNoche_Rembrandt.jpg",
+        5,
+        {
+            x: 4,
+            y: 0,
+            z: -7.5,
+        },
+        0,
+        false
+    );
+
+    loadArtPaitingGroup(
+        "images/artPaintings/LasMeninas_Velazquez.jpg",
+        3,
+        {
+            x: -6,
+            y: 0,
+            z: 7.5,
+        },
+        Math.PI,
+        false
+    );
+    loadArtPaitingGroup(
+        "images/artPaintings/MonaLisa_DaVinci.jpg",
+        2,
+        {
+            x: -2,
+            y: 0,
+            z: 7.5,
+        },
+        Math.PI,
+        false
+    );
+
+    loadArtPaitingGroup(
+        "images/artPaintings/LaRondaDeNoche_Rembrandt.jpg",
+        5,
+        {
+            x: 4,
+            y: 0,
+            z: 7.5,
+        },
+        Math.PI,
+        false
+    );
+
+    loadArtPaitingGroup(
+        "images/artPaintings/LaRondaDeNoche_Rembrandt.jpg",
+        3,
+        {
+            x: 0,
+            y: 1,
+            z: 0,
+        },
+        0,
+        true
+    );
+}
+
+function loadArtPaitingGroup(imagePath, scale, position, rotateY, main) {
+    createArtPaintingGroup(imagePath, scale, position, rotateY)
         .then((paintingWithFrame) => {
             //return paintingWithFrame;
             console.log("Adding painting");
             paintings.push(paintingWithFrame);
             painting1 = paintingWithFrame;
             setUpFocalLighting(paintingWithFrame);
+            if (main) {
+                mainPainting = paintingWithFrame;
+                setUpMainFocalLighting(paintingWithFrame);
+            }
         })
         .catch((error) => {
             console.error("Error cargando la pintura:", error);
         });
 }
 
-function createArtPaintingGroup(imagePath, scale, position) {
+function createArtPaintingGroup(imagePath, scale, position, rotateY) {
     return loadPainting(imagePath, scale).then((painting) => {
         let scaleFrame = 1.1 * scale;
         // create frame of painting
@@ -115,6 +193,9 @@ function createArtPaintingGroup(imagePath, scale, position) {
 
         //add position
         paintingWithFrame.position.set(position.x, position.y, position.z);
+
+        //rotate
+        paintingWithFrame.rotateY(rotateY);
 
         paintingWithFrame.castShadow = true;
         paintingWithFrame.receiveShadow = true;
@@ -205,27 +286,187 @@ function loadFloor(positionY) {
     scene.add(floor);
 }
 
-function loadWalls() {
-    loadWall(20.2, 10, { x: 0, y: 0, z: -7.6 }, 0);
-    loadWall(20.2, 10, { x: 0, y: 0, z: 7.6 }, 0);
-    loadWall(15.2, 10, { x: 10.1, y: 0, z: 0 }, Math.PI / 2);
-    loadWall(15.2, 10, { x: -10.1, y: 0, z: 0 }, Math.PI / 2);
-}
-function loadWall(width, height, position, rotation) {
-    // Create floor
-    const floorGeometry = new THREE.PlaneGeometry(width, height);
-    const floorMaterial = new THREE.MeshStandardMaterial({
-        color: 0xfaebd7,
-        side: THREE.DoubleSide,
-    });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    //floor.rotation.x = -Math.PI / 2;
-    floor.position.set(position.x, position.y, position.z);
-    floor.rotation.y = rotation;
+function loadTable() {
+    // Crear el tablero de la mesa (superficie circular)
+    const radioTablero = 2; // Radio del tablero
+    const grosorTablero = 0.2; // Grosor del tablero
+    const segmentosTablero = 32; // Número de segmentos para suavizar el círculo
+    const geometriaTablero = new THREE.CylinderGeometry(
+        radioTablero,
+        radioTablero,
+        grosorTablero,
+        segmentosTablero
+    );
+    const materialTablero = new THREE.MeshStandardMaterial({ color: 0x8b4513 }); // Color marrón
+    const tablero = new THREE.Mesh(geometriaTablero, materialTablero);
+    tablero.position.set(0, 3, 0); // Posicionar el tablero a una altura de 1 unidad
 
-    floor.receiveShadow = true;
-    scene.add(floor);
+    // Crear una pata de la mesa
+    const alturaPata = 2; // Altura de las patas
+    const radioPata = 0.1; // Radio de las patas
+    const segmentosPata = 16; // Número de segmentos para suavizar las patas
+    const geometriaPata = new THREE.CylinderGeometry(
+        radioPata,
+        radioPata,
+        alturaPata,
+        segmentosPata
+    );
+    const materialPata = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+
+    // Función para crear y posicionar una pata en la circunferencia del tablero
+    function crearPata(angulo) {
+        const pata = new THREE.Mesh(geometriaPata, materialPata);
+        const x = (radioTablero - radioPata) * Math.cos(angulo);
+        const z = (radioTablero - radioPata) * Math.sin(angulo);
+        pata.position.set(x, 2, z);
+        return pata;
+    }
+
+    // Número de patas y ángulo entre ellas
+    const numeroPatas = 4;
+    const anguloEntrePatas = (2 * Math.PI) / numeroPatas;
+
+    // Crear y posicionar las patas
+    const patas = [];
+    for (let i = 0; i < numeroPatas; i++) {
+        const angulo = i * anguloEntrePatas;
+        const pata = crearPata(angulo);
+        patas.push(pata);
+    }
+
+    // Crear un grupo para la mesa
+    const mesa = new THREE.Group();
+    mesa.add(tablero);
+    patas.forEach((pata) => mesa.add(pata));
+
+    mesa.position.set(0, -5, 0);
+
+    // Añadir la mesa a la escena
+    scene.add(mesa);
 }
+
+function loadChairs() {
+    loadChair({ x: -7, y: -5, z: -3 });
+    loadChair({ x: -7, y: -5, z: 0 });
+    loadChair({ x: -7, y: -5, z: 3 });
+}
+
+function loadChair(position) {
+    // Crear el asiento
+    const geometriaAsiento = new THREE.BoxGeometry(2, 0.2, 2);
+    const materialAsiento = new THREE.MeshStandardMaterial({ color: 0x8b4513 }); // Color marrón
+    const asiento = new THREE.Mesh(geometriaAsiento, materialAsiento);
+    asiento.position.set(0, 1, 0);
+
+    // Crear el respaldo
+    const geometriaRespaldo = new THREE.BoxGeometry(2, 2, 0.2);
+    const materialRespaldo = new THREE.MeshStandardMaterial({
+        color: 0x8b4513,
+    });
+    const respaldo = new THREE.Mesh(geometriaRespaldo, materialRespaldo);
+    respaldo.position.set(0, 2, -0.9);
+
+    // Crear una pata
+    const geometriaPata = new THREE.CylinderGeometry(0.1, 0.1, 1);
+    const materialPata = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const pata1 = new THREE.Mesh(geometriaPata, materialPata);
+    pata1.position.set(0.9, 0.5, 0.9);
+
+    // Clonar las otras tres patas
+    const pata2 = pata1.clone();
+    pata2.position.set(-0.9, 0.5, 0.9);
+
+    const pata3 = pata1.clone();
+    pata3.position.set(0.9, 0.5, -0.9);
+
+    const pata4 = pata1.clone();
+    pata4.position.set(-0.9, 0.5, -0.9);
+
+    // Crear un grupo para la silla
+    const silla = new THREE.Group();
+    silla.add(asiento);
+    silla.add(respaldo);
+    silla.add(pata1);
+    silla.add(pata2);
+    silla.add(pata3);
+    silla.add(pata4);
+
+    silla.rotation.y = Math.PI / 2;
+    silla.position.set(position.x, position.y, position.z);
+
+    // Añadir la silla a la escena
+    scene.add(silla);
+}
+
+/*function loadChair2() {
+    // Crear el asiento circular
+    const radioAsiento = 1; // Radio del asiento
+    const segmentosAsiento = 32; // Número de segmentos para suavizar el círculo
+    const geometriaAsiento = new THREE.CircleGeometry(
+        radioAsiento,
+        segmentosAsiento
+    );
+    const materialAsiento = new THREE.MeshStandardMaterial({ color: 0x8b4513 }); // Color marrón
+    const asiento = new THREE.Mesh(geometriaAsiento, materialAsiento);
+    asiento.rotation.x = -Math.PI / 2; // Orientar el asiento horizontalmente
+    asiento.position.set(0, 1.5, 0); // Posicionar el asiento
+
+    // Crear el respaldo curvado
+    const radioRespaldo = 1; // Radio de la curva del respaldo
+    const segmentosRespaldo = 32; // Número de segmentos para suavizar la curva
+    const geometriaRespaldo = new THREE.CylinderGeometry(
+        radioRespaldo,
+        radioRespaldo,
+        0.2,
+        segmentosRespaldo,
+        1,
+        true
+    );
+    const materialRespaldo = new THREE.MeshStandardMaterial({
+        color: 0x8b4513,
+    });
+    const respaldo = new THREE.Mesh(geometriaRespaldo, materialRespaldo);
+    respaldo.rotation.x = -Math.PI / 2; // Orientar la curva del respaldo
+    respaldo.position.set(0, 2.5, -0.9); // Posicionar el respaldo detrás del asiento
+
+    // Crear las patas
+    const alturaPata = 2; // Altura de las patas
+    const radioPata = 0.1; // Radio de las patas
+    const segmentosPata = 16; // Número de segmentos para suavizar las patas
+    const materialPata = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+
+    // Función para crear una pata en una posición específica
+    function crearPata(x, z) {
+        const geometriaPata = new THREE.CylinderGeometry(
+            radioPata,
+            radioPata,
+            alturaPata,
+            segmentosPata
+        );
+        const pata = new THREE.Mesh(geometriaPata, materialPata);
+        pata.rotation.z = Math.PI / 2; // Orientar la pata verticalmente
+        pata.position.set(x, alturaPata / 2, z);
+        return pata;
+    }
+
+    // Crear las cuatro patas
+    const pata1 = crearPata(0.9, 0.9);
+    const pata2 = crearPata(-0.9, 0.9);
+    const pata3 = crearPata(0.9, -0.9);
+    const pata4 = crearPata(-0.9, -0.9);
+
+    // Crear un grupo para la silla
+    const silla = new THREE.Group();
+    silla.add(asiento);
+    silla.add(respaldo);
+    silla.add(pata1);
+    silla.add(pata2);
+    silla.add(pata3);
+    silla.add(pata4);
+
+    // Añadir la silla a la escena
+    scene.add(silla);
+}*/
 
 function mouseInteraction() {
     const raycaster = new THREE.Raycaster();
@@ -256,7 +497,7 @@ function mouseInteraction() {
     });*/
 
     // click event to zoom
-    window.addEventListener("click", () => {
+    /*window.addEventListener("click", () => {
         console.log("Clicked");
         if (paintings.length === 0) return;
 
@@ -288,7 +529,7 @@ function mouseInteraction() {
             //save selection
             selectedPaintings.set(paintingGroup, !paintingSelected);
         }
-    });
+    });*/
 }
 
 function setupLighting() {
@@ -339,8 +580,34 @@ function setUpFocalLighting(painting) {
 
     spotlight.angle = Math.PI / 6; // Ángulo del foco (ajústalo según necesites)
     spotlight.penumbra = 0.3; // Difuminado de los bordes de la luz
-    spotlight.decay = 2; // Atenuación de la luz con la distancia
-    spotlight.distance = 10; // Máxima distancia de iluminación
+    spotlight.decay = 1; // Atenuación de la luz con la distancia
+    spotlight.distance = 15; // Máxima distancia de iluminación
+    spotlight.castShadow = true;
+
+    scene.add(spotlight);
+}
+
+function setUpMainFocalLighting(painting) {
+    console.log("main focal light");
+    setUpMainFocalLight(painting, { x: 0, y: 0, z: -2 });
+    setUpMainFocalLight(painting, { x: 0, y: 0, z: 2 });
+    setUpMainFocalLight(painting, { x: 2, y: 0, z: 0 });
+    setUpMainFocalLight(painting, { x: -2, y: 0, z: 0 });
+}
+
+function setUpMainFocalLight(painting, position) {
+    const spotlight = new THREE.SpotLight(0xffffff, 1.5); // Luz blanca, intensidad 1.5
+    spotlight.position.set(
+        painting.position.x + position.x,
+        painting.position.y + 2,
+        painting.position.z + position.z
+    );
+    spotlight.target = painting; // Apuntar directamente al cuadro
+
+    spotlight.angle = Math.PI / 6; // Ángulo del foco (ajústalo según necesites)
+    spotlight.penumbra = 0.3; // Difuminado de los bordes de la luz
+    spotlight.decay = 1; // Atenuación de la luz con la distancia
+    spotlight.distance = 15; // Máxima distancia de iluminación
     spotlight.castShadow = true;
 
     scene.add(spotlight);
