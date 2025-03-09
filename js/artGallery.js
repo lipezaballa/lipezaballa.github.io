@@ -9,17 +9,21 @@
 import * as THREE from "../lib/three.module.js";
 import { GLTFLoader } from "../lib/GLTFLoader.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
-import { loadWalls, loadFloor } from "./scene/objects/room.js";
+import {loadFloor, loadTables, loadWall, createWallWithOpenings } from "./scene/objects/room.js";
 import { loadTable, loadChairs } from "./scene/objects/furniture.js";
 //import { mouseInteraction } from "./scene/mouseInteractions.js";
 import { loadPaintings, createTexts, getPaintings, updateMainPaintingRotation, mouseInteraction } from "./scene/objects/paintings.js";
 //import { PointerLockControls } from "../lib/PointerLockControls.js";
+import {GUI} from "../lib/lil-gui.module.min.js";
+
 
 //global sources
 const textureLoader = new THREE.TextureLoader();
 
 // global variables
-let renderer, scene, camera, cameraControls;
+let renderer, scene, camera, cameraControls, effectController;
+
+let wall1, wall2, wall3, wall4;
 
 //objects
 let paintings = [];
@@ -30,6 +34,7 @@ init();
 loadScene();
 setupLighting();
 mouseInteraction(camera);
+setupGUI();
 render();
 
 function init() {
@@ -79,6 +84,21 @@ function render() {
     updateMainPaintingRotation();
     
     renderer.render(scene, camera);
+}
+
+function loadWalls(scene) {
+    wall1 = loadWall(scene, 20.2, 10, { x: 0, y: 0, z: -7.6 }, 0);
+    wall2 = loadWall(scene, 20.2, 10, { x: 0, y: 0, z: 7.6 }, 0);
+    wall3 = loadWall(scene, 15.2, 10, { x: -10.1, y: 0, z: 0 }, Math.PI / 2);
+
+    const door = { x: 0, y: 0, z: 0, width: 2, height: 3 };
+    //const wall = loadWall(scene, 15.2, 10, { x: 10.1, y: 0, z: 0 }, Math.PI / 2);
+    //createOpening(scene, wall, new THREE.Vector3(door.x, door.y, door.z), { width: door.width, height: door.height })
+    wall4 = createWallWithOpenings(scene, 15.2, 10, { x: 10.1, y: -5, z: 7.6 }, Math.PI / 2);
+    //scene.add(wall4);
+
+
+    loadTables(scene);
 }
 
 /*function loadPaintings() {
@@ -370,42 +390,24 @@ function setUpMainFocalLight(painting, position) {
     scene.add(mirrorMesh);
 }*/
 
-function firstPerson() {
-    const controls = new PointerLockControls(camera, document.body);
-    document.addEventListener("click", () => controls.lock()); // Hacer clic para capturar el cursor
-    scene.add(controls.getObject());
+function setupGUI()
+{
+	// Definicion de los controles
+	effectController = {
+		colorWall: "rgb(150,150,150)"
+	};
 
-    // movement variables
-    const velocity = new THREE.Vector3();
-    const direction = new THREE.Vector3();
-    const speed = 0.1;
-    const keys = { w: false, a: false, s: false, d: false };
+	// Creacion interfaz
+	const gui = new GUI();
 
-    // keyboard events
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "w") keys.w = true;
-        if (event.key === "a") keys.a = true;
-        if (event.key === "s") keys.s = true;
-        if (event.key === "d") keys.d = true;
+	// Construccion del menu
+	const h = gui.addFolder("Control museo");
+    h.addColor(effectController, "colorWall")
+     .name("Color paredes")
+     .onChange(c=>{
+        wall1.material.setValues({color:c});
+        wall2.material.setValues({color:c});
+        wall3.material.setValues({color:c});
+        wall4.material.setValues({color:c});
     });
-
-    document.addEventListener("keyup", (event) => {
-        if (event.key === "w") keys.w = false;
-        if (event.key === "a") keys.a = false;
-        if (event.key === "s") keys.s = false;
-        if (event.key === "d") keys.d = false;
-    });
-}
-
-function updateDirectionCamera() {
-    direction.set(0, 0, 0);
-    if (keys.w) direction.z -= 1;
-    if (keys.s) direction.z += 1;
-    if (keys.a) direction.x -= 1;
-    if (keys.d) direction.x += 1;
-    direction.normalize();
-
-    // add speed to camera
-    velocity.copy(direction).multiplyScalar(speed);
-    controls.getObject().position.add(velocity);
 }

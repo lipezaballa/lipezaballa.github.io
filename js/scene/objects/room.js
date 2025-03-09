@@ -1,6 +1,6 @@
 import * as THREE from "../../../lib/three.module.js";
 
-export function loadWalls(scene) {
+function loadWalls(scene) {
     loadWall(scene, 20.2, 10, { x: 0, y: 0, z: -7.6 }, 0);
     loadWall(scene, 20.2, 10, { x: 0, y: 0, z: 7.6 }, 0);
     loadWall(scene, 15.2, 10, { x: -10.1, y: 0, z: 0 }, Math.PI / 2);
@@ -14,7 +14,7 @@ export function loadWalls(scene) {
     loadTables(scene);
 }
 
-function loadWall(scene, width, height, position, rotation) {
+export function loadWall(scene, width, height, position, rotation) {
     // Create floor
     const floorGeometry = new THREE.PlaneGeometry(width, height);
     const floorMaterial = new THREE.MeshStandardMaterial({
@@ -79,7 +79,7 @@ function createOpening(scene, wall, position, size) {
     return newWall;
 }
 
-function createWallWithOpenings(scene, width, height, position, rotation) {
+export function createWallWithOpenings(scene, width, height, position, rotation) {
     const wallShape = new THREE.Shape();
 
     // Dimensiones de la pared
@@ -156,7 +156,7 @@ function createWallWithOpenings(scene, width, height, position, rotation) {
 
     
 
-    return wallWithDoorFrame;
+    return wallMesh;
 }
 
 function addDoorFrame(doorWidth, doorHeight, doorX, doorY, wallDepth) {
@@ -189,7 +189,7 @@ function addDoorFrame(doorWidth, doorHeight, doorX, doorY, wallDepth) {
     return frame;
 }
 
-function loadTables(scene) {
+export function loadTables(scene) {
     // Parámetros de las mesas
     const tableWidth = 3;
     const tableHeight = 2;
