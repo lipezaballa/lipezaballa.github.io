@@ -14,10 +14,12 @@ let mainPaintingLoaded;
 const selectedPaintings = new Map();
 const texturesRenacimiento = ['images/artPaintings/Renacimiento/AdanYEva_Tiziano.jpg', 'images/artPaintings/Renacimiento/ElExpolio_ElGreco.jpg', 'images/artPaintings/Renacimiento/LaVeronica_ElGreco.jpg', 'images/artPaintings/Renacimiento/MadonnaSixtina_Sanzio.jpg', 'images/artPaintings/Renacimiento/MonaLisa_DaVinci.jpg', 'images/artPaintings/Renacimiento/TorreBabel_Brueghel.jpg', 'images/artPaintings/Renacimiento/VirgenDeLaRueca_DaVinci.jpg', 'images/artPaintings/Renacimiento/VistaDeToledo_ElGreco.jpg'];
 const texturesBarroco = ['images/artPaintings/Barroco/Calvario_Ribera.jpg','images/artPaintings/Barroco/LaRondaDeNoche_Rembrandt.jpg','images/artPaintings/Barroco/LasMeninas_Velazquez.jpg','images/artPaintings/Barroco/LasTresGraciasRubens.jpg','images/artPaintings/Barroco/Magdalena_LaTour.jpg','images/artPaintings/Barroco/MuchachaCarta_Vermeer.jpg','images/artPaintings/Barroco/SansonYDalila_Rubens.jpg','images/artPaintings/Barroco/Uvas_Murillo.jpg'];
+const texturesRealismo = ['images/artPaintings/Realismo/AsesinatoMarat_Baudry.jpg','images/artPaintings/Realismo/Coriolano_Leroux.jpg','images/artPaintings/Realismo/ElAventador_Millet.jpg','images/artPaintings/Realismo/LaHermanaMayor_Bouguereau.jpg','images/artPaintings/Realismo/LaLavandera_Daumier.jpg','images/artPaintings/Realismo/octubre_Lepage.jpg','images/artPaintings/Realismo/RetraroVictorHugo_Bonnat.jpg','images/artPaintings/Realismo/SombrasProyectadas_Friant.jpg'];
 const periodPosters = [];
 const periodsMap = new Map();
 periodsMap.set('Renacimiento', texturesRenacimiento);
 periodsMap.set('Barroco', texturesBarroco);
+periodsMap.set('Realismo', texturesRealismo);
 
 export function getPaintings() {
     return paintingsLoaded;
@@ -237,7 +239,7 @@ export function loadPaintings(scene) {
         3,
         {
             x: 0,
-            y: 1,
+            y: -1,
             z: 0,
         },
         0,
@@ -412,7 +414,7 @@ function loadArtPaintingGroup(scene, imagePath, scale, position, rotateY, main) 
                 setUpMainFocalLighting(scene, paintingWithFrame);
             } else{
                 paintingsLoaded.push(paintingWithFrame);
-                setUpFocalLighting(scene, paintingWithFrame);
+                setUpFocalLighting(scene, paintingWithFrame, scale);
             }
             
             

@@ -54,7 +54,7 @@ export function loadTable(scene) {
     mesa.add(tablero);
     patas.forEach((pata) => mesa.add(pata));
 
-    mesa.position.set(0, -5, 0);
+    mesa.position.set(0, -6, 0);
 
     // Añadir la mesa a la escena
     scene.add(mesa);

@@ -35,7 +35,7 @@ export function loadFloor(scene, textureLoader, positionY) {
     // Create floor
     const floorGeometry = new THREE.PlaneGeometry(20.2, 15.2);
 
-    const woodTexture = textureLoader.load(
+    const floorTexture = textureLoader.load(
         "images/room/floor6.jpg",
         function (texture) {
             texture.wrapS = THREE.RepeatWrapping;
@@ -45,7 +45,7 @@ export function loadFloor(scene, textureLoader, positionY) {
     );
 
     const floorMaterial = new THREE.MeshStandardMaterial({
-        map: woodTexture,
+        map: floorTexture,
         side: THREE.DoubleSide,
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);

@@ -267,16 +267,18 @@ function createFrame(aspectRatio, scaleFrame) {
 function setupLighting() {
     console.log("light " + paintings.length);
     // Luz ambiental tenue para iluminar toda la escena sin sombras fuertes
-    //const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Color gris tenue, intensidad baja
+    //const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // Color gris tenue, intensidad baja
     //scene.add(ambientLight);
+        const ambiental = new THREE.AmbientLight(0x222222, 1.5);
+        scene.add(ambiental);
 
     //FIXME, quit
     /*const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0, 5, 0); // Posición arriba
+    directionalLight.position.set(10, 0, 0); // Posición arriba
     scene.add(directionalLight);*/
 
     //Room light
-    const pointLight = new THREE.PointLight(0xffffff, 0.8, 100); // Color blanco, intensidad 1, alcance de 100 unidades
+    const pointLight = new THREE.PointLight(0xffffff, 0.6, 100); // Color blanco, intensidad 1, alcance de 100 unidades
     pointLight.position.set(0, 5, 0);
     pointLight.castShadow = true;
     scene.add(pointLight);
